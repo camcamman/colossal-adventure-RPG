@@ -31,37 +31,45 @@ console.log("HEY " + name + " to walk use W")
 //player
 let player = {
   health: 100, 
-  alive: true
+  alive: true,
+  backPack: []
 }
-function VillainMaker (health, name) {
+function VillainMaker (health, name, itme) {
   this.health = health
+  this.originalHealth = health
   this.alive = true
   this.ran = true
-  this.name = name;
+  this.name = name
+  this.itme = itme
 }
 
-let stegosaurus = new VillainMaker (100, 'stegosaurus')
-let skeleton = new VillainMaker (50, 'skeleton')
-let endermite = new VillainMaker (30, 'endermite')
-let spider = new VillainMaker (80, 'spider')
-let phantom = new VillainMaker (60, 'phantom')
+let stegosaurus = new VillainMaker (100, 'stegosaurus', 'tooth')
+let skeleton = new VillainMaker (50, 'skeleton', 'bone')
+let endermite = new VillainMaker (30, 'endermite', 'hat')
+let spider = new VillainMaker (80, 'spider', 'spider web')
+let phantom = new VillainMaker (60, 'phantom', 'stick')
 
 //main function 
 while (player.alive) { // name
     
-  let actions = ['[w]alk', '[q]uit']
+  let actions = ['[w]alk', '[p]rint', '[q]uit']
   actions.forEach(a=>console.log(a))
-  let input = readline.keyIn('Your health is '+player.health+'! What action would you like to select?', {limit: ['w','q']})
+  let input = readline.keyIn('Your health is '+player.health+'! What action would you like to select?', {limit: ['w','q','p']})
 
   // const addHealth = ()
   
   if (input === 'w') walk(player)
+  if (input === 'p') {
+    console.log(player)
+    readline.question('enter to go back')
+  }
   if (input === 'q') quit(player, NaN)
 
 
-  function walk() {
+  function walk(randomEvil = Math.floor(Math.random() * 5)) {
     let randomNum = Math.floor(Math.random() * 4)
     console.log(randomNum)
+    // console.log(player.backPack)
 
   if (randomNum === 0) {//walking
       readline.question(name+" you steped on a  stick. enter to continue")
@@ -80,35 +88,41 @@ while (player.alive) { // name
       let randomEvil = Math.floor(Math.random() * 5) 
       console.log(randomEvil)
 
-      //stegosaurus
-      if (randomEvil === 0) {
-        encounter(stegosaurus, player, 80, 20, 1);
+      function enemyBattles(randomEvil) {
+        //stegosaurus
+        if (randomEvil === 0) {
+          randomEvil = encounter(stegosaurus, player, 80, 20, randomEvil);
+        }
+
+        //skeleton
+        if (randomEvil === 1) {
+          randomEvil = encounter(skeleton, player, 41, 19, randomEvil)
+        }
+
+        //phantom
+        if (randomEvil === 2) {
+            randomEvil = encounter(phantom, player, 35, 10, randomEvil)
+        }  
+
+        //endermite
+        if (randomEvil === 3) {
+          randomEvil = encounter(endermite, player, 20, 1, randomEvil)
+        }
+
+        //spider
+        if (randomEvil === 4) {
+          randomEvil = encounter(spider, player, 40, 15, randomEvil)
+        }
+        return randomEvil !== 5
       }
-
-      //skeleton
-      if (randomEvil === 1) {
-        encounter(skeleton, player, 41, 19, 2)
-      }
-
-      //phantom
-      if (randomEvil === 2) {
-          encounter(phantom, player, 35, 10, 3)
-      }  
-
-      //endermite
-      if (randomEvil === 3) {
-        encounter(endermite, player, 20, 1, 4)
-      }
-
-      //spider
-      if (randomEvil === 4) {
-        encounter(spider, player, 40, 15, 5)
-      }
-
-      if (randomEvil === 5) {
+      if (!enemyBattles(randomEvil)) {
+        if (!enemyBattles(0)) {
         readline.question('GOOD JOB '+name+' you beat the game! eneter to finish')
         player.alive = false
       }
+      }
+
+     
     }
     if (player.health <= 0) {
         endGame (player)
@@ -139,7 +153,7 @@ function fight (badGuy,goodGuy, high, low) {
       readline.question(name+" you escaped. Enter to continue")
     }
     if (runAway === 1) {
-      readline.question(name+'you did not escap. enter to continue')
+      readline.question(name+' you did not escape. enter to continue')
     }
   }
 
@@ -159,8 +173,9 @@ function attakDamge (high, low, gettingAttaked) {
 function youDead (badGuy, goodGuy) {
   if (badGuy.health <= 0) {
     badGuy.alive = false
-    goodGuy.health = 100
-    readline.question(name+'you killed '+badGuy.name+' good job! enter to continue')
+    goodGuy.health += badGuy.originalHealth
+    readline.question(name+' you killed '+badGuy.name+' good job! enter to continue')
+    goodGuy.backPack.push(badGuy.itme)
   }
   if (goodGuy.health <= 0) { 
     badGuy.alive = false
@@ -169,39 +184,42 @@ function youDead (badGuy, goodGuy) {
 }
 
 function endGame(goodGuy) {
-  readline.question("you have died "+name+" do better next time common man enter to contune")
+  readline.question("you have died "+name+" enter to end game")
   goodGuy.alive = false
 }
 
 function quit (goodGuy, badGuy) {
   goodGuy.alive = false
   badGuy.ran = false
-  readline.question(name+"you have left the game. enter to contune")
+  readline.question(name+" you have left the game. enter to contune")
 }
 
 function encounter(badguy, player, badHighNum, badLowNum, nextNum) {
   // console.log(badguy)
   if (badguy.alive === false) {
-    randomEvil = nextNum
+    nextNum++
   }
 
   if (badguy.alive === true) {
 
-    player.ran = true
+    badguy.ran = true
     
     readline.question(name+'! Its a '+badguy.name+'! enter to continue')
     
     
     while (badguy.alive && badguy.ran) {
       console.log(name+' your health is '+player.health)
-      console.log('And the opponent health is '+badguy.health)
+      console.log('And the '+badguy.name+' health is '+badguy.health)
       // startFight(badguy, player)
 
       fight (badguy ,player, 70, 20)
       // console.log(badguy.health)
-      attakDamge (badHighNum, badLowNum, player)
+      if (badguy.ran){
+        attakDamge (badHighNum, badLowNum, player)
+      }
       // console.log(player.health)
       youDead (badguy, player)
     }
   }
+  return nextNum
 }
